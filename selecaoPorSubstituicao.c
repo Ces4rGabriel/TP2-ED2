@@ -73,8 +73,7 @@ int selecaoPorSubstituicao(int TamArea){
                 Aux = retiraArquivo(arq);
                 adicionaArea(reg, Aux, UltElem);
                 i++;
-            } 
-            
+            }    
             Aux2 = retiraArea(reg);
             UltElem = Aux2;
             Aux2.origem = j;
