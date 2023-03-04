@@ -14,14 +14,15 @@ int main(int argc, char const *argv[]){
     situacao = atoi(argv[3]);  
     if ((argc == 5) && strcmp(argv[4], "-P") == 0)
         printResult = 1;
+        
     //escolher arquivo
     switch (situacao)
     {
     case 1:
-        strcpy(nomeArquivo, "arquivos/PROVAO_ORDENADO.dat");
+        strcpy(nomeArquivo, "arquivos/PROVAO_ORDENADO.bin");
         break;
     case 2:
-        strcpy(nomeArquivo, "arquivos/PROVAO_DESCRESCENTE.dat");
+        strcpy(nomeArquivo, "arquivos/PROVAO_DESCRESCENTE.bin");
         break;
     case 3:
         strcpy(nomeArquivo, "arquivos/PROVAO_DESORDENADO.bin");

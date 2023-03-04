@@ -3,9 +3,9 @@
 /**
  * Conjunto de variáveis que armazena o desempenho do método 
  */
-int numLeituraQuick = 0;
-int numEscritaQuick = 0;
-int numComparacoesQuick = 0;
+int nLeitura = 0;
+int nEscrita = 0;
+int nComparacoes = 0;
 clock_t tempoExecucaoInicioQuick;
 clock_t tempoExecucaoFimQuick;
 
@@ -19,10 +19,10 @@ void quicksort_main(int nRegistros, int printResult, int situacao){
 	switch (situacao)
 	{
 	case 1:
-		strcpy(nomeArq, "arquivos/PROVAO_ASCENDENTE_TMP.bin");
+		strcpy(nomeArq, "arquivos/PROVAO_ORDENADO_TMP.bin");
 		break;
 	case 2:
-		strcpy(nomeArq, "arquivos/PROVAO_DESCENDENTE_TMP.bin");
+		strcpy(nomeArq, "arquivos/PROVAO_DESCRESCENTE_TMP.bin");
 		break;
 	case 3:
 		strcpy(nomeArq, "arquivos/PROVAO_DESORDENADO_TMP.bin");
@@ -53,7 +53,7 @@ void quicksort_main(int nRegistros, int printResult, int situacao){
 	/**
 	 * Exibição de resultados de desempenho
 	 */ 
-	if (!printResult)
+	if (printResult)
 		exibir(1, nomeArq, quantidade);
 	return;
 }
@@ -138,14 +138,14 @@ void particao(FILE **arqLi, FILE **arqEi, FILE **arqLEs, TipoArea *area, int esq
 		else
 			leInf(arqLi, &ultimoLido, &li, &ondeLer);
 		
-		numComparacoesQuick++;
+		nComparacoes++;
 		if(ultimoLido.nota > Lsup){
 			*j = es;
 			escreveMax(arqLEs, ultimoLido, &es);
 			continue;
 		}
 
-		numComparacoesQuick++;
+		nComparacoes++;
 		if(ultimoLido.nota < Linf){
 			*i = ei;
 			escreveMin(arqEi, ultimoLido, &ei);
@@ -184,7 +184,7 @@ void leSup(FILE **arqLEs, TipoRegistro *ultimoLido, int *ls, short *ondeLer){
 
 	*ondeLer = false;
 
-	numLeituraQuick++;
+	nLeitura++;
 }
 
 void leInf(FILE **arqLi, TipoRegistro *ultimoLido, int *li, short *ondeLer){
@@ -194,7 +194,7 @@ void leInf(FILE **arqLi, TipoRegistro *ultimoLido, int *li, short *ondeLer){
 
 	*ondeLer = true;
 
-	numLeituraQuick++;
+	nLeitura++;
 }
 
 void inserirArea(TipoArea *area, TipoRegistro *ultimoLido, int *NRArea){
@@ -207,14 +207,14 @@ void escreveMax(FILE **arqLEs, TipoRegistro R, int *es){
 	fwrite(&R, sizeof(TipoRegistro), 1, *arqLEs);
 	(*es)--;
 
-	numEscritaQuick++;
+	nEscrita++;
 }
 
 void escreveMin(FILE **arqEi, TipoRegistro R, int *ei){
 	fwrite(&R, sizeof(TipoRegistro), 1, *arqEi);
 	(*ei)++;
 
-	numEscritaQuick++;
+	nEscrita++;
 }
 
 void insereItem(TipoRegistro *ultimoLido, TipoArea *area){
@@ -306,7 +306,7 @@ void ordenaArea(TipoArea *area){
 			int j = i;
 			
 			while(area[j-h]->nota > aux->nota){
-				numComparacoesQuick++;
+				nComparacoes++;
 				area[j] = area[j-h];
 				j = j - h;
 				
@@ -356,7 +356,7 @@ void exibir(int printResults, char *nomeArquivo, int quantidade){
 		for(int i = 0; i < quantidade; i++){
 			TipoRegistro res;
 			fread(&res, sizeof(TipoRegistro), 1, arq);
-			printf("\n %ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
+			printf("%ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
 		}
 		fclose(arq);
 	}
@@ -370,8 +370,8 @@ void exibir(int printResults, char *nomeArquivo, int quantidade){
 	printf("\n          Resultados          ");
 	printf("\n------------------------------");
 	printf("\n- Tempo de Execucao: %lf seg  ", tempoExecucao);
-	printf("\n- Numero de Leituras: %d      ", numLeituraQuick);
-	printf("\n- Numero de Escritas: %d      ", numEscritaQuick);
-	printf("\n- Numero de Comparacoes: %d   ", numComparacoesQuick);
+	printf("\n- Numero de Leituras: %d      ", nLeitura);
+	printf("\n- Numero de Escritas: %d      ", nEscrita);
+	printf("\n- Numero de Comparacoes: %d   ", nComparacoes);
 	printf("\n ____________________________ ");
 }
