@@ -3,13 +3,15 @@
 #include <time.h>
 #include <string.h>
 #include "quicksort.h"
+#include "interF1.h"
+#include "inter2F.h"
 
 void duplicaArq(char *nomeArq, int situacao);
 
 int main(int argc, char const *argv[]){
     int metodo, nRegistros, situacao, printResult = 0;
     char nomeArquivo[50];
-    metodo = atoi(argv[1]); //1 = xx, 2 = Axxx, 3 = QuickSort Externo
+    metodo = atoi(argv[1]); //1 = F2, 2 = F1, 3 = QuickSort Externo
     nRegistros = atoi(argv[2]);
     situacao = atoi(argv[3]);  
     if ((argc == 5) && strcmp(argv[4], "-P") == 0)
@@ -35,8 +37,10 @@ int main(int argc, char const *argv[]){
     switch (metodo)
     {
     case 1:
+        f2_main(nRegistros, situacao, printResult);
         break;
     case 2:
+        f1_main(nRegistros, situacao, printResult);
         break;
     case 3:
         quicksort_main(nRegistros, printResult, situacao);

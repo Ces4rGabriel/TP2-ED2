@@ -53,8 +53,8 @@ void quicksort_main(int nRegistros, int printResult, int situacao){
 	/**
 	 * Exibição de resultados de desempenho
 	 */ 
-	if (printResult)
-		exibir(1, nomeArq, quantidade);
+
+	exibir(printResult, nomeArq, quantidade);
 	return;
 }
 
@@ -352,9 +352,8 @@ void exibir(int printResults, char *nomeArquivo, int quantidade){
 	if(printResults){
 		FILE *arq;
 		arq = fopen(nomeArquivo, "r+b");
-		
+		TipoRegistro res;
 		for(int i = 0; i < quantidade; i++){
-			TipoRegistro res;
 			fread(&res, sizeof(TipoRegistro), 1, arq);
 			printf("%ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
 		}
@@ -366,12 +365,10 @@ void exibir(int printResults, char *nomeArquivo, int quantidade){
 	 */
 	double tempoExecucao = (((double) tempoExecucaoFimQuick) - ((double) tempoExecucaoInicioQuick)) / CLOCKS_PER_SEC;
 
-	printf("\n______________________________");
-	printf("\n          Resultados          ");
-	printf("\n------------------------------");
-	printf("\n- Tempo de Execucao: %lf seg  ", tempoExecucao);
-	printf("\n- Numero de Leituras: %d      ", nLeitura);
-	printf("\n- Numero de Escritas: %d      ", nEscrita);
-	printf("\n- Numero de Comparacoes: %d   ", nComparacoes);
-	printf("\n ____________________________ ");
+	printf("\nAnalise:\n");
+	printf("\nTempo de Execucao: %lf seg  ", tempoExecucao);
+	printf("\nNumero de Leituras: %d      ", nLeitura);
+	printf("\nNumero de Escritas: %d      ", nEscrita);
+	printf("\nNumero de Comparacoes: %d   ", nComparacoes);
+	printf("\nFim.\n\n");
 }

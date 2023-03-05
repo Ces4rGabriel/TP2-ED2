@@ -8,10 +8,12 @@
 #include <time.h>
 #include <limits.h>
 #include <float.h>
+#include "arquivo.h"
 
 #define TAM_AREA 10
 #define TAM_TOTAL 471705
 
+/*
 typedef struct{
     long matricula;
     double nota;
@@ -19,7 +21,7 @@ typedef struct{
     char cidade[52];
     char curso[40];
 }TipoRegistro;
-
+*/
 typedef TipoRegistro* TipoArea;
 void quicksort_main(int nRegistros, int printResult, int situacao);
 void quicksortExterno(FILE **arqLi, FILE **arqEi, FILE **arqLEs, int esq, int dir);
