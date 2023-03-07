@@ -1,10 +1,10 @@
-#include "interF1.h"
+#include "F1.h"
 
 #include "heap.h"
 Analise analise;
 
  // Estrutura para armazenar as informações de análise de eficiência do algoritmo.
-void f1_main(int quantidade, int situacao, int printResult) {
+void intercalcaoMainF1(int quantidade, int situacao, int printResult) {
     FILE *prova;                              // Arquivo de origem à ser ordenado
     char nomeArq[50];
     analise.numComparacoes = 0;
@@ -14,9 +14,16 @@ void f1_main(int quantidade, int situacao, int printResult) {
 
     char nomes[TOTALFITA][TOTALFITA] = {""};  // Vetor de nomes para criar as fitas
     FILE *arqvs[TOTALFITA];                   // Apontador para as fitas
-    Estrutura alunosEmMemoria[TAMFITAINT];    // voltat intam;
+    TipoAreaS *A = malloc(sizeof(TipoAreaS)); // Estrutura que guarda os alunos em memória
+    A->area = malloc(sizeof(TipoAluno) * TAMFITAINT);
+    A->nMarcados = 0;
+    //alocar a area
     int vetTam = 0;    
                            // Estrutura que guarda os alunos em memória
+
+    nomeiaArquivo(nomes);
+    criaArquivo(arqvs, nomes);
+
 	switch (situacao)
 	{
 	case 1:
@@ -35,10 +42,7 @@ void f1_main(int quantidade, int situacao, int printResult) {
         printf("Erro ao abrir o arquivo de origem.\n");
         return;
     }
-    if (printResult) {
-        printf("Arquivo a ser ordenado: \n");
-        imprimirFitaOrigem(prova, quantidade);
-    }
+
 
     nomeiaArquivo(nomes);
     criaArquivo(arqvs, nomes);
@@ -46,20 +50,23 @@ void f1_main(int quantidade, int situacao, int printResult) {
     analise.tempoInicial = clock();
     // È feito a leitua inicial para preencher o vetor de alunos em memória principal.
     for (int i = 0; i < TAMFITAINT; i++) {
-        alunosEmMemoria[i].aluno = readFile(prova);
-        alunosEmMemoria[i].maior = false;
+        A->area[i].aluno = readFile(prova);
+        A->area[i].marcado = 0;
         analise.numLeitura += 1;
         vetTam++;
     }
 
+    //int i = vetTam;
+  
     // Constroi o Min heap(Ordenando com o pai sempre menor que os filhos) a partir dos alunos em memória e retorna o número de comparações feitas.
-    analise.numComparacoes += HEAP_CONSTROI(alunosEmMemoria, vetTam); 
+    analise.numComparacoes += heapsort(A->area, vetTam); 
+    
 
     // Começa a fase de geração dos blocos iniciais ordenados
-    geraBlocos(arqvs, alunosEmMemoria, prova, &vetTam, quantidade);
+    geraBlocos(arqvs, A->area, prova, &vetTam, quantidade);
 
     // Começa a fase de intercalção dos blocos, ou seja, passar das fitas de entrada para a fita de saída.
-    while (intercalacao(arqvs, alunosEmMemoria, &vetTam)) {
+    while (intercalacao(arqvs, A->area, &vetTam)) {
         // e então passar da fita de saida para as de entrada de forma ordenada.
         redistribuicao(arqvs, nomes, &vetTam);
     }
@@ -67,14 +74,15 @@ void f1_main(int quantidade, int situacao, int printResult) {
 
     exibirResultados(printResult, arqvs);
 
+    //printf("VALOR DE VETTAM: %d\n", vetTam);
     fechaArq(arqvs);
     fclose(prova);
-    system("rm -rf data/*");
+    //system("rm -rf data/*");
     return;
 }
 
 // Geração dos blocos iniciais ordenados por seleção por substituição.
-void geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], FILE *prova, int *vetTam, int quantidade) {
+void geraBlocos(FILE *arqvs[TOTALFITA], TipoAluno area[TAMFITAINT], FILE *prova, int *vetTam, int quantidade) {
     int numfita = 0;                    // Número da fitas de entrada utilizadas
     int cont = 17, segundoBloco = 0;    // Contador para saber a quantidade de elementos a ser lidos do arquivo de entrada(original)
     TipoRegistro alunoNulo;                   // Aluno nulo tendo nota = -1, para marcar o fim de um bloco ou da fita.
@@ -82,11 +90,11 @@ void geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], F
 
     while (*vetTam > 1) {
         cont++;
-        fwrite(&alunosEmMemoria[0].aluno, sizeof(TipoRegistro), 1, arqvs[numfita]); // Escreve o primeiro aluno da memória principal para a fita de entrada.
+        fwrite(&area[0].aluno, sizeof(TipoRegistro), 1, arqvs[numfita]); // Escreve o primeiro aluno da memória principal para a fita de entrada.
         analise.numEscrita += 1;
 
         if (feof(prova) || cont >= quantidade) {  // Verifica se o arquivo de entrada está vazio  ou se a quantidade de elementos a seram lidos foi alcançada 
-            if (remove_No(alunosEmMemoria, vetTam, &analise) || *vetTam == 1) { // e à partir disso remove cada primeiro elemento do vetor.
+            if (removeArea(area, vetTam, &analise) || *vetTam == 1) { // e à partir disso remove cada primeiro elemento do vetor.
                 fwrite(&alunoNulo, sizeof(TipoRegistro), 1, arqvs[numfita]);
                 analise.numEscrita += 1;
                 if (*vetTam != 1)
@@ -95,7 +103,7 @@ void geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], F
         }
         else {
             analise.numLeitura += 1;
-            if(substitui(alunosEmMemoria, vetTam, readFile(prova), &analise)) { // Substitui o primeiro elemento do vetor pelo próximo aluno 
+            if(adicionaArea(area, vetTam, readFile(prova), &analise)) { // Substitui o primeiro elemento do vetor pelo próximo aluno 
                 fwrite(&alunoNulo, sizeof(TipoRegistro), 1, arqvs[numfita]);          // lido do arquivo de entrada(original).
                 analise.numEscrita += 1;
                 numfita += 1;
@@ -112,7 +120,7 @@ void geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], F
 }
 
 // Fase de intercalção dos blocos, ou seja, passar das fitas de entrada para a fita de saída.
-int intercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], int *vetTam) {
+int intercalacao(FILE *arqvs[TOTALFITA], TipoAluno alunosEmMemoria[TAMFITAINT], int *vetTam) {
     int blocosFitaSaida = 0;            // Número de blocos que estão na fita de saída, para saber se há somente 1 e a ordenação acabou.
     TipoRegistro aluno;
     TipoRegistro alunoNulo;
@@ -138,9 +146,9 @@ int intercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], 
         analise.numLeitura += 1;
         // Caso aluno.nota = -1, significa que a bloco/fita de entrada está vazia, então ele é removido do vetor de elementos.
         if (aluno.nota == -1)
-            remove_No(alunosEmMemoria, vetTam, &analise);
+            removeArea(alunosEmMemoria, vetTam, &analise);
         else
-            substitui(alunosEmMemoria, vetTam, aluno, &analise);
+            adicionaArea(alunosEmMemoria, vetTam, aluno, &analise);
 
         if (*vetTam == 0) {
             blocosFitaSaida++;
@@ -156,18 +164,18 @@ int intercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], 
 }
 
 // Preenche o vetor de TipoRegistro com o primeiro elemento(ou primeiro elemento restante) de cada fita utilizada
-void preencheVetorAlunos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[TAMFITAINT], int *vetTam) {
+void preencheVetorAlunos(FILE *arqvs[TOTALFITA], TipoAluno alunosEmMemoria[TAMFITAINT], int *vetTam) {
     *vetTam = 0;
 
     for (int j = 0, i = 0; i < TAMFITAINT; i++) {
         analise.numLeitura += 1;
         if (fread(&alunosEmMemoria[j].aluno, sizeof(TipoRegistro), 1, arqvs[i])) { // Verifica se há elemento em cada fita de entrada e  o escreve no vetor de alunos.
             alunosEmMemoria[j].posFita = i;                                  // Guarda a posição da fita de entrada em cada elemento.
-            alunosEmMemoria[j++].maior = false;
+            alunosEmMemoria[j++].marcado = 0;
             *vetTam += 1;                                                    // Incrementa o tamanho do vetor de alunos.    
         }
     }
-    analise.numComparacoes += HEAP_CONSTROI(alunosEmMemoria, *vetTam);
+    analise.numComparacoes += heapsort(alunosEmMemoria, *vetTam);
 }
 
 // Transfere os elementos da fita de saída para as fitas de entrada de forma ordenada.
@@ -209,27 +217,29 @@ void redistribuicao(FILE *arqvs[TOTALFITA], char nomes[TOTALFITA][TOTALFITA], in
 
 // Funçaõ que imprime o resultado da analise de execução do programa, e caso solicitado imprime os elementos da fita de saída.
 void exibirResultados(int printResult, FILE *arqvs[TOTALFITA]) {
+    FILE *resultFile = fopen("resultado.txt", "w");
     if (printResult) {
         TipoRegistro res;
         rewind(arqvs[POSFITAEXT]);
         printf("\n\nFITA DE SAIDA\n");
+        fprintf(resultFile, "\n\nFITA DE SAIDA\n");
 
         while (fread(&res, sizeof(TipoRegistro), 1, arqvs[POSFITAEXT])) {
             printf("%ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
+            fprintf(resultFile, "%ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
         }
         printf("\n\n");
+        fprintf(resultFile, "\n\n");
     }
 
-    //Tempo de execução em segundos
-	double tempoExecucao = ((double)analise.tempoFinal - analise.tempoInicial) / CLOCKS_PER_SEC;
-
-
     printf("Alalise:\n\n");
-	printf("\nTempo  de Execucao: %lf seg  ", tempoExecucao);
-	printf("\nNumero de Leituras: %d      ", analise.numLeitura);
-	printf("\nNumero de Escritas: %d      ", analise.numEscrita);
-	printf("\n#umero de Comparacoes: %lld   ", analise.numComparacoes);
-	printf("\nFim.\n\n");
+    printf("\nNumero de Leituras: %d", analise.numLeitura);
+    printf("\nNumero de Escritas: %d", analise.numEscrita);
+    printf("\nNumero de Comparacoes: %lld", analise.numComparacoes);
+    printf("\nTempo  de Execucao: %lfs", ((double)analise.tempoFinal - analise.tempoInicial) / CLOCKS_PER_SEC);
+    printf("\nFim.\n\n");
+
+    fclose(resultFile);
 }
 
 void imprimirFitaOrigem(FILE *arq, int tam) {

@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <float.h>
 #include "arquivo.h"
+#include "heap.h"
 
 #define TAM_AREA 10
 #define TAM_TOTAL 471705
@@ -36,7 +37,7 @@ void retiraMax(TipoArea *area, TipoRegistro *R, int *NRArea);
 void retiraMin(TipoArea *area, TipoRegistro *R, int *NRArea);
 void retiraUltimo(TipoArea *area, TipoRegistro *R);
 void retiraPrimeiro(TipoArea *area, TipoRegistro *R);
-TipoArea* criaAreaVazia(TipoArea *area);
+TipoArea* criaAreaVazia();
 int obterNumCelulasOcupadas(TipoArea *area);
 void ordenaArea(TipoArea *area);
 void copiarAluno(TipoRegistro *destino, TipoRegistro origem);

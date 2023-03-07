@@ -1,7 +1,7 @@
 #ifndef heap_h
 #define heap_h
 
-#include <stdbool.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,10 +17,11 @@ typedef struct {
 } Analise;
 
 
-void HEAP_REFAZ(Estrutura *v, int esq, int dir);
-int HEAP_CONSTROI(Estrutura *v, int tam);
-void Insere_No(Estrutura *v, TipoRegistro elem, int *tam);
-bool remove_No(Estrutura *v, int *tam, Analise *comp);
-bool substitui(Estrutura *v, int *tam, TipoRegistro elem, Analise *comp);
+void heapfy(TipoAluno *vAlunos, int esq, int dir);
+int heapsort(TipoAluno *vAlunos, int tam);
+void Insere_No(TipoAluno *vAlunos, TipoRegistro elem, int *tam);
+int removeArea(TipoAluno *vAlunos, int *tam, Analise *comp);
+int adicionaArea(TipoAluno *vAlunos, int *tam, TipoRegistro elem, Analise *comp);
+int verificaMarcados(TipoAreaS *v);
 
 #endif

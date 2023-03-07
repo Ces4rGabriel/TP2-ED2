@@ -1,16 +1,8 @@
-#include "inter2F.h"
+#include "2F.h"
 
 extern Analise analise;
-void FF_imprime(Estrutura *v, int tam) {
-    int cont = 0;
-    printf("\n");
-    for (int i = 0; i < tam; i++) {
-        printf("%d fita: %d - %ld %d %s %s %s T/F: %d \n", cont++, v[i].posFita, v[i].aluno.matricula, (int)v[i].aluno.nota, v[i].aluno.estado, v[i].aluno.cidade, v[i].aluno.curso, v[i].maior);
-    }
-    printf("\n");
-}
 
-void f2_main(int quantidade, int situacao, int printResult) {
+void intercalcaoMain2F(int quantidade, int situacao, int printResult) {
     analise.numComparacoes = 0;
     analise.numEscrita = 0;
     analise.numLeitura = 0;
@@ -38,14 +30,14 @@ void f2_main(int quantidade, int situacao, int printResult) {
 
     // início da fase de criação de blocos ordenados
     int vetTam = 0;
-    Estrutura alunosEmMemoria[FF_TAMFITAINT];  // heap da memória
+    TipoAluno alunosEmMemoria[FF_TAMFITAINT];  // heap da memória
     for (int i = 0; i < FF_TAMFITAINT; i++) {
         alunosEmMemoria[i].aluno = readFile(prova);
-        alunosEmMemoria[i].maior = false;
+        alunosEmMemoria[i].marcado = 0;
         vetTam++;
     }
 
-    HEAP_CONSTROI(alunosEmMemoria, vetTam);
+    heapsort(alunosEmMemoria, vetTam);
     FF_geraBlocos(arqvs, alunosEmMemoria, prova, &vetTam, quantidade);
     // fim da fase de criação de blocos ordenados
 
@@ -63,14 +55,14 @@ void f2_main(int quantidade, int situacao, int printResult) {
     system("rm -rf data/*");
 }
 
-void esvaziarHeap(Estrutura alunosEmMemoria[FF_TAMFITAINT]) {
+void esvaziarHeap(TipoAluno alunosEmMemoria[FF_TAMFITAINT]) {
     TipoRegistro alunoNulo = getAlunoVazio();
     for (int i = 0; i < 10; i++) {
         alunosEmMemoria[i].aluno = alunoNulo;
     }
 }
 
-void FF_geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[FF_TAMFITAINT], FILE *prova, int *vetTam, int quantidade) {
+void FF_geraBlocos(FILE *arqvs[TOTALFITA], TipoAluno alunosEmMemoria[FF_TAMFITAINT], FILE *prova, int *vetTam, int quantidade) {
     int count = 0;
     int numfita = 0;
     TipoRegistro alunoNulo = getAlunoVazio();
@@ -78,11 +70,11 @@ void FF_geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[FF_TAMFITAI
     while (*vetTam > 1 && count < quantidade) {
         fwrite(&alunosEmMemoria[0].aluno, sizeof(TipoRegistro), 1, arqvs[numfita]);
         if (feof(prova)) {
-            if (remove_No(alunosEmMemoria, vetTam, &analise)) {
+            if (removeArea(alunosEmMemoria, vetTam, &analise)) {
                 fwrite(&alunoNulo, sizeof(TipoRegistro), 1, arqvs[numfita]);
                 numfita += 1;
             }
-        } else if (substitui(alunosEmMemoria, vetTam, readFile(prova), &analise)) {
+        } else if (adicionaArea(alunosEmMemoria, vetTam, readFile(prova), &analise)) {
             fwrite(&alunoNulo, sizeof(TipoRegistro), 1, arqvs[numfita]);
             numfita += 1;
         }
@@ -105,7 +97,7 @@ void FF_geraBlocos(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[FF_TAMFITAI
  * Preenche o heap o primeiro valor de cada fita de entrada
  * retorna a quantidade de fitas com valores reais
  */
-int FF_inicializarMemoriaIntercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[FF_TAMFITAINT], int fitaEntradaInicial) {
+int FF_inicializarMemoriaIntercalacao(FILE *arqvs[TOTALFITA], TipoAluno alunosEmMemoria[FF_TAMFITAINT], int fitaEntradaInicial) {
     TipoRegistro aluno;
     int countFitasNaoVazias = 0;
     int firstIndex = getFirstCurrentIndex(fitaEntradaInicial);
@@ -113,12 +105,12 @@ int FF_inicializarMemoriaIntercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEm
         if (fread(&aluno, sizeof(TipoRegistro), 1, arqvs[firstIndex + i]) && aluno.nota != -1) {
             analise.numLeitura++;
             alunosEmMemoria[countFitasNaoVazias].aluno = aluno;
-            alunosEmMemoria[countFitasNaoVazias].maior = false;
+            alunosEmMemoria[countFitasNaoVazias].marcado = 0;
             alunosEmMemoria[countFitasNaoVazias].posFita = firstIndex + i;
             countFitasNaoVazias++;
         }
     }
-    HEAP_CONSTROI(alunosEmMemoria, countFitasNaoVazias);
+    heapsort(alunosEmMemoria, countFitasNaoVazias);
     return countFitasNaoVazias;
 }
 
@@ -139,7 +131,7 @@ void limparEntradas(FILE *arqvs[TOTALFITA], int startIndex, int endIndex) {
  * função recursiva para intercalação
  * retorna o índice da fita de saída ordenada com o resultado
  */
-int FF_intercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[FF_TAMFITAINT], int fitaEntradaAtual, int fitaSaidaAtual, int tamEntrada, int countNiveis) {
+int FF_intercalacao(FILE *arqvs[TOTALFITA], TipoAluno alunosEmMemoria[FF_TAMFITAINT], int fitaEntradaAtual, int fitaSaidaAtual, int tamEntrada, int countNiveis) {
     TipoRegistro vazio = getAlunoVazio();
 
     while (tamEntrada > 0) {
@@ -151,15 +143,15 @@ int FF_intercalacao(FILE *arqvs[TOTALFITA], Estrutura alunosEmMemoria[FF_TAMFITA
         analise.numEscrita++;
 
         TipoRegistro aluno;
-        bool novaFita = false;
+        bool novaFita = 0;
         analise.numLeitura++;
         // caso tenha acabado a fita de entrada, remove o ultimo item do heap
         if (feof(arqvs[fitaEntradaAtual]) || !fread(&aluno, sizeof(TipoRegistro), 1, arqvs[fitaEntradaAtual]) || aluno.nota == -1) {
-            novaFita = remove_No(alunosEmMemoria, &tamEntrada, &analise);
+            novaFita = removeArea(alunosEmMemoria, &tamEntrada, &analise);
         } else {
             alunosEmMemoria[0].posFita = fitaEntradaAtual;
             // substitui o proximo item da fita de entrada no heap
-            novaFita = substitui(alunosEmMemoria, &tamEntrada, aluno, &analise);
+            novaFita = adicionaArea(alunosEmMemoria, &tamEntrada, aluno, &analise);
         }
 
         // caso não exista mais itens na fita, ou todos os itens do heap estão marcados
@@ -243,32 +235,29 @@ TipoRegistro getAlunoVazio() {
 }
 
 void FF_exibirResultados(int quantidade, int printResult, FILE *arqvs[TOTALFITA], int fitaSaida) {
+    FILE *resultFile = fopen("resultado.txt", "w");
     if (printResult) {
         printf("\n\n\nRESULTADO: FITA %d \n", fitaSaida + 1);
-        //imprimirFita(arqvs[fitaSaida], quantidade);
+        fprintf(resultFile, "\n\n\nRESULTADO: FITA %d \n", fitaSaida + 1);
         TipoRegistro res;
         rewind(arqvs[fitaSaida]);
         while (fread(&res, sizeof(TipoRegistro), 1, arqvs[fitaSaida]) && quantidade--) {
             if (res.nota != -1) {
-                printf("%ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
+                printf("%08ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
+                fprintf(resultFile, "%08ld\t%05.1lf\t%s\t%s\t%s", res.matricula, res.nota, res.estado, res.cidade, res.curso);
             }
         }
         rewind(arqvs[fitaSaida]);
-
     }
 
-    /**
-     * Tempo de execução em segundos
-     */
-
-    double tempoExecucao = ((double)analise.tempoFinal - analise.tempoInicial) / CLOCKS_PER_SEC;
-
     printf("\nAnalise:\n");
-    printf("\nTempo  de Execucao: %lf seg  ", tempoExecucao);
-    printf("\nNumero de Leituras: %d      ", analise.numLeitura);
-    printf("\nNumero de Escritas: %d      ", analise.numEscrita);
-    printf("\nNumero de Comparacoes: %lld   ", analise.numComparacoes);
+    printf("\nNumero de Leituras: %d", analise.numLeitura);
+    printf("\nNumero de Escritas: %d", analise.numEscrita);
+    printf("\nNumero de Comparacoes: %lld", analise.numComparacoes);
+    printf("\nTempo  de Execucao: %lf s", ((double)analise.tempoFinal - analise.tempoInicial) / CLOCKS_PER_SEC);
     printf("\nFim.\n\n");
+
+    fclose(resultFile);
 }
 
 void imprimirFitas(FILE *arqvs[TOTALFITA]) {

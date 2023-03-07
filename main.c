@@ -3,8 +3,8 @@
 #include <time.h>
 #include <string.h>
 #include "quicksort.h"
-#include "interF1.h"
-#include "inter2F.h"
+#include "F1.h"
+#include "2F.h"
 
 void duplicaArq(char *nomeArq, int situacao);
 
@@ -37,10 +37,10 @@ int main(int argc, char const *argv[]){
     switch (metodo)
     {
     case 1:
-        f2_main(nRegistros, situacao, printResult);
+        intercalcaoMain2F(nRegistros, situacao, printResult);
         break;
     case 2:
-        f1_main(nRegistros, situacao, printResult);
+        intercalcaoMainF1(nRegistros, situacao, printResult);
         break;
     case 3:
         quicksort_main(nRegistros, printResult, situacao);

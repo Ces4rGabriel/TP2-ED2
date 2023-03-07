@@ -19,9 +19,15 @@ typedef struct{
 
 typedef struct {
     TipoRegistro aluno;
-    bool maior;
+    int marcado;
     int posFita;
-} Estrutura;
+} TipoAluno;
+
+typedef struct {
+    TipoAluno *area;
+    int ne;
+    int nMarcados;
+} TipoAreaS;
 
 void fechaArq(FILE *arqvs[TOTALFITA]);
 void nomeiaArquivo(char nomes[TOTALFITA][TOTALFITA]);
